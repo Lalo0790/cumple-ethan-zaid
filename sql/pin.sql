@@ -16,12 +16,12 @@ revoke all on sequence public.cumple_intentos_id_seq from anon, authenticated;
 -- Devuelve null si el PIN es correcto; si no, un json de error. Cuenta fallos (por IP y global).
 create or replace function public.cumple_verificar(p_pin text) returns json
 language plpgsql security definer set search_path = public as $$
-declare ip text; fi int; fg int; c cumple_cfg%rowtype;
+declare v_ip text; fi int; fg int; c cumple_cfg%rowtype;
 begin
-  begin ip := coalesce(nullif(btrim(split_part((current_setting('request.headers',true)::json)->>'x-forwarded-for',',',1)),''),'?');
-  exception when others then ip := '?'; end;
+  begin v_ip := coalesce(nullif(btrim(split_part((current_setting('request.headers',true)::json)->>'x-forwarded-for',',',1)),''),'?');
+  exception when others then v_ip := '?'; end;
   delete from cumple_intentos where at < now() - interval '1 day';
-  select count(*) into fi from cumple_intentos where ip = cumple_verificar.ip and at > now() - interval '15 minutes';
+  select count(*) into fi from cumple_intentos where ip = v_ip and at > now() - interval '15 minutes';
   select count(*) into fg from cumple_intentos where at > now() - interval '1 hour';
   if fi >= 5 or fg >= 30 then
     return json_build_object('ok',false,'error','bloqueado');
@@ -30,7 +30,7 @@ begin
   if c.pin_hash is not null and encode(sha256(convert_to(c.salt || coalesce(p_pin,''),'utf8')),'hex') = c.pin_hash then
     return null;
   end if;
-  insert into cumple_intentos(ip) values (ip);
+  insert into cumple_intentos(ip) values (v_ip);
   return json_build_object('ok',false,'error','pin','restantes', greatest(0, 5 - fi - 1));
 end $$;
 
