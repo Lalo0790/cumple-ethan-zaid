@@ -1,0 +1,30 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cumple Ethan y Zaid//ES
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:America/Mexico_City
+BEGIN:STANDARD
+DTSTART:19700101T000000
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0600
+TZNAME:CST
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:cumple-ethan-zaid-20261212@lalo0790.github.io
+DTSTAMP:20261117T190000Z
+DTSTART;TZID=America/Mexico_City:20261212T100000
+DTEND;TZID=America/Mexico_City:20261212T140000
+SUMMARY:Cumpleaños de Ethan y Zaid
+LOCATION:Salón Marve\, Fernando de Alva Ixtlixóchitl 125A\, col. Obrera\, 06800 CDMX
+DESCRIPTION:Fiesta de cumpleaños de Ethan y Zaid. Confirma tu asistencia: https://lalo0790.github.io/cumple-ethan-zaid/
+URL:https://lalo0790.github.io/cumple-ethan-zaid/
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Mañana es el cumpleaños de Ethan y Zaid
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,61 @@
+:root{--azul:#0a1a3d;--azul2:#13307a;--verde:#3fb23a;--oro:#ffc83d;--papel:#f6f3ea;--tinta:#14213d}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--azul);color:#fff;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+img{display:block;max-width:100%;height:auto}
+.portada{position:relative;max-width:560px;margin:0 auto}
+.portada img{width:100%}
+.bajar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(10,26,61,.82);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:9px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.35);white-space:nowrap}
+main{max-width:560px;margin:0 auto}
+.bloque{padding:0 0 8px}
+.cartel{width:100%}
+.cuando{text-align:center;padding:26px 20px 4px}
+.dia{margin:0;font-size:26px;font-weight:800;letter-spacing:.2px}
+.hora{margin:2px 0 0;font-size:19px;color:var(--oro);font-weight:600}
+.cuenta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:18px 20px 0}
+.cuenta div{background:var(--azul2);border-radius:10px;padding:10px 0 8px;text-align:center}
+.cuenta b{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.cuenta span{font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:.75}
+.cuenta-msg{text-align:center;margin:8px 0 0;opacity:.8;font-size:15px}
+h2{font-size:22px;margin:0 0 8px}
+.lugar,.agenda{margin:26px 20px 0;padding:20px;background:var(--papel);color:var(--tinta);border-radius:14px}
+.lugar h2,.agenda h2{color:var(--azul2)}
+.lugar p{margin:0 0 4px}
+.lugar .sitio{font-size:21px;font-weight:800}
+.btn{display:inline-block;margin-top:14px;background:var(--verde);color:#fff;text-decoration:none;font-weight:700;font-size:17px;padding:13px 22px;border-radius:10px;border:0;cursor:pointer;text-align:center;font-family:inherit}
+.btn:active{transform:translateY(1px)}
+.btn.claro{background:#fff;color:var(--azul2);border:2px solid var(--azul2)}
+.agenda .dos{display:grid;gap:10px;margin-top:2px}
+.agenda .btn{margin-top:6px}
+.form-bloque{margin-top:30px;padding:28px 20px 12px;background:var(--papel);color:var(--tinta);border-radius:20px 20px 0 0}
+.form-bloque h2{font-size:28px;color:var(--azul2)}
+.sub{margin:0 0 18px;font-size:16px;opacity:.85}
+form label{display:block;font-weight:700;margin:16px 0 6px;font-size:16px}
+input[type=text],textarea,input[type=number]{width:100%;font:inherit;font-size:17px;padding:12px;border:2px solid #b9c0d4;border-radius:10px;background:#fff;color:var(--tinta)}
+input:focus,textarea:focus{outline:none;border-color:var(--azul2)}
+fieldset{border:0;padding:0;margin:16px 0 0}
+legend{font-weight:700;padding:0;margin-bottom:6px}
+.opciones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opciones input{position:absolute;opacity:0;pointer-events:none}
+.opciones label{margin:0;padding:14px 8px;text-align:center;border:2px solid #b9c0d4;border-radius:10px;background:#fff;cursor:pointer;font-weight:600}
+#si:checked+label{background:var(--verde);border-color:var(--verde);color:#fff}
+#no:checked+label{background:#5b6482;border-color:#5b6482;color:#fff}
+#si:focus-visible+label,#no:focus-visible+label{outline:3px solid var(--oro)}
+.cuantos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.step{display:flex}
+.step button{width:46px;flex:none;font-size:24px;font-weight:700;border:2px solid var(--azul2);background:#fff;color:var(--azul2);cursor:pointer}
+.step button:first-child{border-radius:10px 0 0 10px}
+.step button:last-child{border-radius:0 10px 10px 0}
+.step input{text-align:center;border-radius:0;border-left:0;border-right:0;padding:12px 2px;min-width:0;-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none}
+.nota{font-size:14px;opacity:.75;margin:8px 0 0}
+.op{font-weight:400;opacity:.65}
+.error{background:#fde7e7;color:#8a1c1c;padding:10px 12px;border-radius:8px;margin:14px 0 0;font-size:15px}
+.btn.grande{width:100%;margin:18px 0 18px;font-size:19px;padding:16px}
+.btn[disabled]{opacity:.6}
+.gracias{text-align:center;padding:10px 0 26px}
+.gracias h3{font-size:24px;margin:0 0 8px;color:var(--azul2)}
+.gracias p{margin:0}
+footer{background:var(--papel);color:#5b6482;text-align:center;padding:10px 20px 34px;font-size:14px;max-width:560px;margin:0 auto}
+footer p{margin:0}
+@media(min-width:600px){body{background:#06122b}.form-bloque{border-radius:20px}main,.portada{box-shadow:0 0 40px rgba(0,0,0,.4)}}

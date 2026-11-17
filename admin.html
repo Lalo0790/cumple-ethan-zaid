@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Confirmaciones · Cumple Ethan y Zaid</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#eef0f6;color:#14213d}
+header{background:#0a1a3d;color:#fff;padding:16px 16px 14px}
+header h1{margin:0;font-size:20px}
+header p{margin:2px 0 0;font-size:14px;opacity:.75}
+main{max-width:720px;margin:0 auto;padding:14px}
+.tot{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tot div{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.tot b{display:block;font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tot span{font-size:14px;color:#5b6482}
+.tot .grande{grid-column:1/-1;background:#13307a;color:#fff}
+.tot .grande span{color:#cfd8f5}
+.tot .grande b{font-size:44px}
+.barra{display:flex;gap:8px;margin:18px 0 8px;flex-wrap:wrap}
+.barra button{font:inherit;font-size:14px;padding:8px 12px;border-radius:99px;border:1.5px solid #13307a;background:#fff;color:#13307a;cursor:pointer}
+.barra button.on{background:#13307a;color:#fff}
+.barra .der{margin-left:auto}
+.fila{background:#fff;border-radius:12px;padding:12px 14px;margin-top:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr auto;gap:2px 10px}
+.fila h3{margin:0;font-size:17px}
+.fila .meta{font-size:14px;color:#5b6482}
+.fila .msg{grid-column:1/-1;font-size:15px;background:#f3f4f9;border-radius:8px;padding:6px 10px;margin-top:6px}
+.tag{font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;align-self:start;justify-self:end}
+.tag.si{background:#dff3dc;color:#1f6b1b}.tag.no{background:#e8eaf2;color:#4b5470}
+.fila button{grid-column:1/-1;justify-self:start;margin-top:6px;font:inherit;font-size:13px;color:#a02727;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.vacio,.aviso{text-align:center;color:#5b6482;padding:26px 10px}
+.aviso{color:#8a1c1c}
+</style>
+</head>
+<body>
+<header><h1>Confirmaciones · Ethan y Zaid</h1><p id="act">Cargando…</p></header>
+<main id="m" hidden>
+  <div class="tot">
+    <div class="grande"><b id="t-total">0</b><span>personas asistirán en total</span></div>
+    <div><b id="t-fam">0</b><span>familias que confirman</span></div>
+    <div><b id="t-no">0</b><span>no asisten</span></div>
+    <div><b id="t-ad">0</b><span>adultos</span></div>
+    <div><b id="t-ni">0</b><span>niños</span></div>
+  </div>
+  <div class="barra">
+    <button data-f="todos" class="on">Todos</button><button data-f="si">Sí vienen</button><button data-f="no">No vienen</button>
+    <button class="der" id="copiar">Copiar lista</button><button id="refrescar">Actualizar</button>
+  </div>
+  <div id="lista"></div>
+</main>
+<p id="aviso" class="aviso" hidden></p>
+<script>
+(function(){
+var SB="https://ustkwaeyanwhdoirrpld.supabase.co", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGt3YWV5YW53aGRvaXJycGxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNTk0OTcsImV4cCI6MjEwOTkzNTQ5N30.FJS_Sv-CnZc1jwTKP1v6FSQhr7IqIT4tynFz9aMRwQk";
+var $=function(i){return document.getElementById(i)};
+var k=(location.hash.match(/k=([^&]+)/)||[])[1]; k=k?decodeURIComponent(k):"";
+var filtro="todos", datos=null;
+function rpc(fn,body){
+  return fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(body)})
+   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||"error");return j;});});
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fecha(s){return new Date(s).toLocaleString("es-MX",{timeZone:"America/Mexico_City",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}
+function pintar(){
+  var r=datos.resumen;
+  $("t-total").textContent=r.total_asistentes; $("t-fam").textContent=r.familias_confirman; $("t-no").textContent=r.no_asisten;
+  $("t-ad").textContent=r.adultos; $("t-ni").textContent=r.ninos;
+  var f=datos.filas.filter(function(x){return filtro==="todos"||(filtro==="si")===x.asiste});
+  $("lista").innerHTML=f.length?f.map(function(x){
+    return '<div class="fila"><h3>'+esc(x.nombre)+'</h3><span class="tag '+(x.asiste?"si":"no")+'">'+(x.asiste?"Sí viene":"No viene")+'</span>'+
+     '<div class="meta">'+(x.asiste?x.adultos+" adulto"+(x.adultos===1?"":"s")+" · "+x.ninos+" niño"+(x.ninos===1?"":"s")+" · ":"")+fecha(x.updated_at)+'</div>'+
+     (x.mensaje?'<div class="msg">'+esc(x.mensaje)+'</div>':"")+
+     '<button data-id="'+x.id+'" data-n="'+esc(x.nombre)+'">Borrar</button></div>';
+  }).join(""):'<p class="vacio">'+(datos.filas.length?"No hay respuestas en este filtro.":"Todavía no hay confirmaciones.")+'</p>';
+  $("act").textContent="Actualizado "+new Date().toLocaleTimeString("es-MX",{timeZone:"America/Mexico_City",hour:"numeric",minute:"2-digit"});
+}
+function cargar(){
+  if(!k){mal("Falta la clave en el enlace.");return;}
+  rpc("cumple_lista",{p_key:k}).then(function(j){datos=j;$("m").hidden=false;$("aviso").hidden=true;pintar();})
+   .catch(function(e){mal(/autorizado/.test(e.message)?"Enlace no válido.":"No se pudo cargar. Intenta de nuevo.");});
+}
+function mal(t){$("m").hidden=true;$("aviso").hidden=false;$("aviso").textContent=t;$("act").textContent="";}
+document.querySelectorAll(".barra [data-f]").forEach(function(b){b.onclick=function(){
+  document.querySelectorAll(".barra [data-f]").forEach(function(x){x.classList.remove("on")});b.classList.add("on");filtro=b.dataset.f;pintar();};});
+$("refrescar").onclick=cargar;
+$("lista").addEventListener("click",function(e){
+  var id=e.target.dataset&&e.target.dataset.id; if(!id)return;
+  if(!confirm("¿Borrar la respuesta de "+e.target.dataset.n+"?"))return;
+  rpc("cumple_borrar",{p_key:k,p_id:parseInt(id,10)}).then(cargar).catch(function(){alert("No se pudo borrar.");});
+});
+$("copiar").onclick=function(){
+  if(!datos)return; var r=datos.resumen;
+  var t="Confirmaciones Ethan y Zaid\n"+r.familias_confirman+" familias · "+r.adultos+" adultos · "+r.ninos+" niños · "+r.total_asistentes+" personas · "+r.no_asisten+" no asisten\n\n"+
+   datos.filas.map(function(x){return (x.asiste?"✔ ":"✘ ")+x.nombre+(x.asiste?" ("+x.adultos+"A, "+x.ninos+"N)":"")}).join("\n");
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("copiar").textContent="Copiado";setTimeout(function(){$("copiar").textContent="Copiar lista"},1500)}).catch(function(){prompt("Copia la lista:",t)});
+};
+cargar(); setInterval(function(){if(!document.hidden)cargar()},30000);
+})();
+</script>
+</body>
+</html>
