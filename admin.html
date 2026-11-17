@@ -31,19 +31,28 @@ main{max-width:720px;margin:0 auto;padding:14px}
 .tag{font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;align-self:start;justify-self:end}
 .tag.si{background:#dff3dc;color:#1f6b1b}.tag.no{background:#e8eaf2;color:#4b5470}
 .fila button{grid-column:1/-1;justify-self:start;margin-top:6px;font:inherit;font-size:13px;color:#a02727;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.pin{max-width:340px;margin:12vh auto 0;padding:26px 22px;background:#fff;border-radius:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.pin h2{margin:0 0 6px;font-size:20px}.pin p{margin:0 0 16px;color:#5b6482;font-size:15px}
+.pin input{width:100%;font:inherit;font-size:32px;letter-spacing:.5em;text-align:center;padding:12px 0 12px .5em;border:2px solid #b9c0d4;border-radius:10px;color:#14213d}
+.pin input:focus{outline:none;border-color:#13307a}
+.pin button{width:100%;margin-top:14px;font:inherit;font-weight:700;font-size:18px;padding:14px;border:0;border-radius:10px;background:#3fb23a;color:#fff;cursor:pointer}
+.pin button[disabled]{opacity:.6}
+.pin .e{color:#8a1c1c;min-height:1.4em;margin:12px 0 0;font-size:15px}
+.salir{float:right;font:inherit;font-size:14px;color:#fff;background:none;border:1.5px solid rgba(255,255,255,.5);border-radius:99px;padding:5px 14px;cursor:pointer}
 .vacio,.aviso{text-align:center;color:#5b6482;padding:26px 10px}
 .aviso{color:#8a1c1c}
 </style>
 </head>
 <body>
-<header><h1>Confirmaciones · Ethan y Zaid</h1><p id="act">Cargando…</p></header>
+<header><button class="salir" id="salir" hidden>Salir</button><h1>Confirmaciones · Ethan y Zaid</h1><p id="act"></p></header>
+<section class="pin" id="pin" hidden><h2>Ingresa tu PIN</h2><p>Ingresa tu PIN para ver las confirmaciones.</p><form id="pf" autocomplete="off"><input id="pi" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="PIN de 4 dígitos"><button id="pb" type="submit">Entrar</button></form><p class="e" id="pe" role="alert"></p></section>
 <main id="m" hidden>
   <div class="tot">
     <div class="grande"><b id="t-total">0</b><span>personas asistirán en total</span></div>
-    <div><b id="t-fam">0</b><span>familias que confirman</span></div>
-    <div><b id="t-no">0</b><span>no asisten</span></div>
-    <div><b id="t-ad">0</b><span>adultos</span></div>
-    <div><b id="t-ni">0</b><span>niños</span></div>
+    <div><b id="t-fam">0</b><span id="l-fam">familias que confirman</span></div>
+    <div><b id="t-no">0</b><span id="l-no">no asisten</span></div>
+    <div><b id="t-ad">0</b><span id="l-ad">adultos</span></div>
+    <div><b id="t-ni">0</b><span id="l-ni">niños</span></div>
   </div>
   <div class="barra">
     <button data-f="todos" class="on">Todos</button><button data-f="si">Sí vienen</button><button data-f="no">No vienen</button>
@@ -56,8 +65,8 @@ main{max-width:720px;margin:0 auto;padding:14px}
 (function(){
 var SB="https://ustkwaeyanwhdoirrpld.supabase.co", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzdGt3YWV5YW53aGRvaXJycGxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNTk0OTcsImV4cCI6MjEwOTkzNTQ5N30.FJS_Sv-CnZc1jwTKP1v6FSQhr7IqIT4tynFz9aMRwQk";
 var $=function(i){return document.getElementById(i)};
-var k=(location.hash.match(/k=([^&]+)/)||[])[1]; k=k?decodeURIComponent(k):"";
-var filtro="todos", datos=null;
+var pin=""; try{pin=localStorage.getItem("cumple-pin")||""}catch(e){}
+var filtro="todos", datos=null, timer=null;
 function rpc(fn,body){
   return fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(body)})
    .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||"error");return j;});});
@@ -66,6 +75,10 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){retur
 function fecha(s){return new Date(s).toLocaleString("es-MX",{timeZone:"America/Mexico_City",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}
 function pintar(){
   var r=datos.resumen;
+  $("l-fam").textContent=r.familias_confirman===1?"familia que confirma":"familias que confirman";
+  $("l-no").textContent=r.no_asisten===1?"no asiste":"no asisten";
+  $("l-ad").textContent=r.adultos===1?"adulto":"adultos";
+  $("l-ni").textContent=r.ninos===1?"niño":"niños";
   $("t-total").textContent=r.total_asistentes; $("t-fam").textContent=r.familias_confirman; $("t-no").textContent=r.no_asisten;
   $("t-ad").textContent=r.adultos; $("t-ni").textContent=r.ninos;
   var f=datos.filas.filter(function(x){return filtro==="todos"||(filtro==="si")===x.asiste});
@@ -77,19 +90,40 @@ function pintar(){
   }).join(""):'<p class="vacio">'+(datos.filas.length?"No hay respuestas en este filtro.":"Todavía no hay confirmaciones.")+'</p>';
   $("act").textContent="Actualizado "+new Date().toLocaleTimeString("es-MX",{timeZone:"America/Mexico_City",hour:"numeric",minute:"2-digit"});
 }
-function cargar(){
-  if(!k){mal("Falta la clave en el enlace.");return;}
-  rpc("cumple_lista",{p_key:k}).then(function(j){datos=j;$("m").hidden=false;$("aviso").hidden=true;pintar();})
-   .catch(function(e){mal(/autorizado/.test(e.message)?"Enlace no válido.":"No se pudo cargar. Intenta de nuevo.");});
+function pedirPin(msg){
+  clearInterval(timer); $("m").hidden=true; $("aviso").hidden=true; $("salir").hidden=true; $("act").textContent="";
+  $("pin").hidden=false; $("pe").textContent=msg||""; $("pi").value=""; $("pi").focus();
 }
-function mal(t){$("m").hidden=true;$("aviso").hidden=false;$("aviso").textContent=t;$("act").textContent="";}
+function respuesta(j,silencioso){
+  if(j&&j.ok){datos=j;$("pin").hidden=true;$("aviso").hidden=true;$("m").hidden=false;$("salir").hidden=false;pintar();return true;}
+  if(j&&j.error==="bloqueado"){pedirPin("Demasiados intentos. Espera unos 15 minutos y vuelve a intentar.");}
+  else{try{localStorage.removeItem("cumple-pin")}catch(e){} pin=""; pedirPin(silencioso?"":"PIN incorrecto. Inténtalo de nuevo.");}
+  return false;
+}
+function cargar(silencioso){
+  if(!pin){pedirPin();return Promise.resolve();}
+  return rpc("cumple_lista",{p_pin:pin}).then(function(j){return respuesta(j,silencioso);})
+   .catch(function(){$("aviso").hidden=false;$("aviso").textContent="No se pudo cargar. Revisa tu conexión e intenta de nuevo.";});
+}
+function mantener(){clearInterval(timer);timer=setInterval(function(){if(!document.hidden&&pin)cargar(true)},30000);}
+$("pf").addEventListener("submit",function(e){
+  e.preventDefault(); var v=$("pi").value.replace(/\D/g,"");
+  if(v.length!==4){$("pe").textContent="El PIN tiene 4 números.";return;}
+  $("pb").disabled=true; pin=v;
+  rpc("cumple_lista",{p_pin:v}).then(function(j){
+    if(respuesta(j)){try{localStorage.setItem("cumple-pin",v)}catch(e){} mantener();}
+  }).catch(function(){$("pe").textContent="No se pudo conectar. Inténtalo de nuevo.";})
+   .then(function(){$("pb").disabled=false;});
+});
+$("pi").addEventListener("input",function(){this.value=this.value.replace(/\D/g,"");if(this.value.length===4)$("pb").click();});
+$("salir").onclick=function(){try{localStorage.removeItem("cumple-pin")}catch(e){} pin=""; datos=null; pedirPin();};
 document.querySelectorAll(".barra [data-f]").forEach(function(b){b.onclick=function(){
   document.querySelectorAll(".barra [data-f]").forEach(function(x){x.classList.remove("on")});b.classList.add("on");filtro=b.dataset.f;pintar();};});
-$("refrescar").onclick=cargar;
+$("refrescar").onclick=function(){cargar()};
 $("lista").addEventListener("click",function(e){
   var id=e.target.dataset&&e.target.dataset.id; if(!id)return;
   if(!confirm("¿Borrar la respuesta de "+e.target.dataset.n+"?"))return;
-  rpc("cumple_borrar",{p_key:k,p_id:parseInt(id,10)}).then(cargar).catch(function(){alert("No se pudo borrar.");});
+  rpc("cumple_borrar",{p_pin:pin,p_id:parseInt(id,10)}).then(function(j){if(j&&j.ok)cargar();else respuesta(j);}).catch(function(){alert("No se pudo borrar.");});
 });
 $("copiar").onclick=function(){
   if(!datos)return; var r=datos.resumen;
@@ -97,7 +131,7 @@ $("copiar").onclick=function(){
    datos.filas.map(function(x){return (x.asiste?"✔ ":"✘ ")+x.nombre+(x.asiste?" ("+x.adultos+"A, "+x.ninos+"N)":"")}).join("\n");
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("copiar").textContent="Copiado";setTimeout(function(){$("copiar").textContent="Copiar lista"},1500)}).catch(function(){prompt("Copia la lista:",t)});
 };
-cargar(); setInterval(function(){if(!document.hidden)cargar()},30000);
+cargar().then(function(){if(pin)mantener();});
 })();
 </script>
 </body>
